@@ -243,10 +243,10 @@
                                 display.textContent = '-';
                             }
                             break;
-                        case 'decimal':
                         case '(':
                         case ')':
-                            special(displayedNum);
+                        case 'decimal':
+                            form(displayedNum, action);
                             break;
                         case 'clear':
                             clear();
@@ -276,9 +276,9 @@
                 calculator.dataset.operator = action;
             }
             
-            function special(displayedNum) {
+            function form(displayedNum, action) {
                 switch (action) {
-                    case '.':
+                    case 'decimal':
                         display.textContent += '.';
                         calculator.dataset.previousKeyType = '.';
                         break;
@@ -319,7 +319,7 @@
                         result = root(n1, n2, 1);
                         break;
                 }
-                display.textContent = result // `${result.real}${result.imag >= 0 ? '+' : ''}${result.imag}i`;
+                display.textContent = result; // `${result.real}${result.imag >= 0 ? '+' : ''}${result.imag}i`;
                 calculator.dataset.previousKeyType = 'calculate';
                 display.firstValue = 0;
             }
@@ -351,7 +351,6 @@
             }
 
             var factorials = [1, 1];
-            
             function fac(x) {
                 if (factorials.length-1 < x) {
                     for (var i = factorials.length-1; i < x; i++) {
