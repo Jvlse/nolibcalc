@@ -1,234 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>NoLibCalc</title>
-    <style>
-        button {
-            border: 0;
-            background-color: transparent;
-            font-size: 4vw; /* Base font size scales with viewport width */
-            font-family: inherit;
-            font-weight: inherit;
-            appearance: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            padding: 2vw; /* Padding relative to viewport width */
-        }
+    <head>
+        <title>NoLibCalc</title>
+        <style>
+            button {
+                border: 0;
+                background-color: transparent;
+                font-size: clamp(1rem, 3vh, 2rem);
+                font-family: inherit;
+                font-weight: inherit;
+                appearance: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                padding: clamp(0.5rem, 2vh, 1rem);
+            }
+            input:hover, input:active, input:focus, 
+            textarea:hover, textarea:active, textarea:focus,
+            button:hover, button:active,
+            button:focus { outline: none; }
+            :root { font-family: Helvetica, Arial, sans-serif; }
+            html, body {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: #ffffff;
+            }
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 90vw;
+                height: 90vh;
+                max-width: 600px;
+                max-height: 800px;
+                min-height: 400px;
+                overflow: hidden;
+            }
+            .calculator {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                background-color: #fff;
+                border-radius: 12px;
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
+                overflow: hidden;
+            }
+            .calculator__display {
+                background-color: #222;
+                color: #fff;
+                font-size: clamp(6rem, 5vh, 2rem);
+                padding: clamp(0.5rem, 2vh, 1rem) clamp(0.5rem, 2vw, 1rem);
+                text-align: right;
+                flex: 1;
+                overflow: hidden;
+            }
+            .calculator__keys {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                width: 100%;
+                height: auto;
+                gap: 1px;
+            }
+            .calculator__keys > * {
+                background-color: #fff;
+                padding: clamp(0.5rem, 2vh, 1rem);
+                font-size: clamp(1rem, 3vh, 2rem);
+                box-sizing: border-box;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+            }
+            .calculator__keys > *:active::before {
+                background-color: rgba(0, 0, 0, 0.1);
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1;
+            }
+            .calculator__keys > *:active {
+                background-color: #eee;
+            }
+            .calculator__keys > .is-depressed::before {
+                background-color: rgba(0, 0, 0, 0.1);
+                z-index: 1;
+            }
+            .key--operator { background-color: #eee; }
+            .key--special {
+                background-color: #d4e7f7;
+                grid-column: span 1;
+            }
+            .key--equal {
+                background-color: #ffaf9b;
+                grid-column: span 2;
+            }
+            @media (max-height: 600px) {
+                .container { height: auto; max-height: 90vh; }
+                .calculator { height: auto; }
+                .calculator__display {
+                    font-size: clamp(0.8rem, 4vh, 1.5rem);
+                    padding: clamp(0.4rem, 1.5vh, 0.8rem) clamp(0.4rem, 1.5vw, 0.8rem);
+                }
+                .calculator__keys > * {
+                    padding: clamp(0.4rem, 1.5vh, 0.8rem);
+                    font-size: clamp(0.8rem, 3vh, 1.5rem);
+                }
+            }
 
-        input:hover, input:active, input:focus, 
-        textarea:hover, textarea:active, textarea:focus,
-        button:hover, button:active,
-        button:focus {
-            outline: none;
-        }
-
-        :root {
-            font-family: Helvetica, Arial, sans-serif;
-        }
-
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f0f0;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 90vw; /* Width of the container */
-            height: 90vh; /* Height of the container */
-            max-width: 600px; /* Maximum width of the container */
-            max-height: 800px; /* Maximum height of the container */
-        }
-
-        .calculator {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
-            overflow: hidden; /* Ensure content doesn't overflow */
-        }
-
-        .calculator__display {
-            background-color: #222;
-            color: #fff;
-            font-size: 6vh; /* Font size relative to viewport height */
-            padding: 2vh 2vw; /* Padding relative to viewport dimensions */
-            text-align: right;
-            flex: 1;
-            overflow: hidden; /* Prevent overflow */
-        }
-
-        .calculator__keys {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* Equal width columns */
-            width: 100%; /* Ensure grid takes full width of container */
-            height: auto; /* Allow grid height to adjust naturally */
-            gap: 1px; /* Small gap between buttons */
-        }
-
-        .calculator__keys > * {
-            background-color: #fff;
-            padding: 2vw; /* Padding relative to viewport width */
-            font-size: 4vw; /* Font size relative to viewport width */
-            box-sizing: border-box; /* Include padding in width calculation */
-            text-align: center;
-            display: flex; /* Use flex to center text */
-            align-items: center;
-            justify-content: center;
-            position: relative; /* Ensure positioning context for pseudo-elements */
-            overflow: hidden; /* Ensure pseudo-elements do not overflow */
-        }
-
-        .calculator__keys > *:active::before {
-            background-color: rgba(0, 0, 0, 0.1);
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1; /* Ensure pseudo-element is above button content */
-        }
-
-        .calculator__keys > *:active {
-            background-color: #eee; /* Optional: Change background color on active */
-        }
-
-        .calculator__keys > .is-depressed::before {
-            background-color: rgba(0, 0, 0, 0.1); /* Consistent appearance for depressed state */
-            z-index: 1; /* Ensure pseudo-element is above button content */
-        }
-
-        .key--operator {
-            background-color: #eee;
-        }
-
-        .key--equal {
-            background-color: #fe886a;
-            grid-column: span 2;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="calculator">
-            <div class="calculator__display">0</div>
-            <div class="calculator__keys">
-                <button class="key--operator" data-action="sin">sin(n)</button>
-                <button class="key--operator" data-action="cos">cos(n)</button>
-                <button class="key--operator" data-action="tan">tan(n)</button>
-                <button class="key--operator" data-action="pi">π</button>
-                <button class="key--operator" data-action="add">+</button>
-                <button class="key--operator" data-action="subtract">-</button>
-                <button class="key--operator" data-action="multiply">&times;</button>
-                <button class="key--operator" data-action="divide">÷</button>
-                <button>7</button>
-                <button>8</button>
-                <button>9</button>
-                <button>4</button>
-                <button>5</button>
-                <button>6</button>
-                <button>1</button>
-                <button>2</button>
-                <button>3</button>
-                <button>0</button>
-                <button data-action="decimal">.</button>
-                <button data-action="clear">AC</button>
-                <button class="key--equal" data-action="calculate">=</button>
+            @media (max-height: 400px) {
+                .container { height: auto; max-height: 90vh; }
+                .calculator { height: auto; }
+                .calculator__display {
+                    font-size: clamp(0.6rem, 3vh, 1rem);
+                    padding: clamp(0.2rem, 1vh, 0.5rem) clamp(0.2rem, 1vw, 0.5rem);
+                }
+                .calculator__keys > * {
+                    padding: clamp(0.2rem, 1vh, 0.5rem);
+                    font-size: clamp(0.6rem, 2vh, 1rem);
+                }
+            }
+            .supsub { display: inline-block; }
+            .supsub sup,
+            .supsub sub {
+                position: relative;
+                display: block;
+                font-size: 0.5em;
+                line-height: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="calculator">
+                <div class="calculator__display">0</div>
+                <div class="calculator__keys">
+                    <button class="key--operator" data-action="sum">&Sigma;
+                        <span class='supsub'>
+                            <sup>y</sup>
+                            <sub>x</sub>
+                        </span>z
+                    </button>
+                    <button class="key--operator" data-action="mult">&Pi;
+                        <span class='supsub'>
+                            <sup>y</sup>
+                            <sub>x</sub>
+                        </span>z
+                    </button>
+                    <button class="key--operator" data-action=")">)</button>
+                    <button class="key--operator" data-action="fac">!</button>
+                    <button class="key--operator" data-action="sin">sin(x)</button>
+                    <button class="key--operator" data-action="cos">cos(x)</button>
+                    <button class="key--operator" data-action="tan">tan(x)</button>
+                    <button class="key--operator" data-action="pi">π</button>
+                    <button class="key--operator" data-action="exp">x<sup class='superscript'><sup class='superscript'>y</sup></sup></button>
+                    <button class="key--operator" data-action="root">&#x221A;x</button>
+                    <button class="key--operator" data-action="log">log<sub><sub>x</sub></sub>y</button>
+                    <button class="key--operator" data-action="e">e</button>
+                    <button class="key--operator" data-action="(">(</button>
+                    <button class="key--operator" data-action=")">)</button>
+                    <button class="key--special" data-action="clear">AC</button>
+                    <button class="key--operator" data-action="div">÷</button>
+                    <button>7</button>
+                    <button>8</button>
+                    <button>9</button>
+                    <button class="key--operator" data-action="mul">&times;</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>6</button>
+                    <button class="key--operator" data-action="sub">-</button>
+                    <button>1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button class="key--operator" data-action="add">+</button>
+                    <button class="key--operator" data-action="decimal">.</button>
+                    <button>0</button>
+                    <button class="key--equal" data-action="calculate">=</button>
+                </div>
             </div>
         </div>
-    </div>
-    <script type="text/javascript">
-        const calculator = document.querySelector('.calculator');
-        const keys = calculator.querySelector('.calculator__keys');
-        const display = document.querySelector('.calculator__display');
+        <script type="text/javascript">
+            const calculator = document.querySelector('.calculator');
+            const keys = calculator.querySelector('.calculator__keys');
+            const display = document.querySelector('.calculator__display');
+            const pi = 3.141592653589793;
+            const euler = 2.718281828459045;
 
-        keys.addEventListener('click', handleClick);
-
-        function handleClick(e) {
-            if (e.target.matches('button')) {
-                const key = e.target;
-                const action = key.dataset.action;
-                const keyContent = key.textContent;
-                const displayedNum = display.textContent;
-                const previousKeyType = calculator.dataset.previousKeyType;
-
-                switch(action) {
-                    case 'add':
-                    case 'subtract':
-                    case 'multiply':
-                    case 'divide':
-                        operator(key, displayedNum, action);
+            keys.addEventListener('click', handleClick);
+            
+            function handleClick(e) {
+                if (e.target.matches('button')) {
+                    const key = e.target;
+                    const action = key.dataset.action;
+                    const keyContent = key.textContent;
+                    const displayedNum = display.textContent;
+                    const previousKeyType = calculator.dataset.previousKeyType;
+            
+                    switch(action) {
+                        case 'pi':
+                            display.textContent = pi;
+                            break;
+                        case 'e':
+                            display.textContent = euler;
+                            break;
+                        case 'sin':
+                            display.textContent = sine(displayedNum);;
+                            break;
+                        case 'cos':
+                            display.textContent = cosine(displayedNum);
+                            break;
+                        case 'fac':
+                            display.textContent = fac(displayedNum);
+                            break;
+                        case 'add':
+                        case 'sub':
+                        case 'mul':
+                        case 'div':
+                        case 'exp':                   
+                        case 'root':
+                        case 'log':
+                            operator(key, displayedNum, action);
+                            break;
+                        case 'decimal':
+                        case '(':
+                        case ')':
+                            special(displayedNum);
+                            break;
+                        case 'clear':
+                            clear();
+                            break;
+                        case 'calculate':
+                            calculate(calculator.dataset.firstValue, calculator.dataset.operator, displayedNum);
+                            break;
+                        default:
+                            if (displayedNum === '0' || previousKeyType === 'operate' || previousKeyType == 'calculate') {
+                                calculator.dataset.previousKeyType = null;
+                                display.textContent = keyContent;
+                            } else if (previousKeyType === '.') {
+                                display.textContent += keyContent;
+                            } else {
+                                display.textContent += keyContent;
+                            }
+                            break;
+                    }
+                }
+            }
+            
+            function operator(key, displayedNum, action) {
+                key.classList.add('is-depressed');
+                calculator.dataset.previousKeyType = 'operator';
+                calculator.dataset.firstValue = display.textContent;
+                display.textContent = key.dataset.keyContent;
+                calculator.dataset.operator = action;
+            }
+            
+            function special(displayedNum) {
+                switch (action) {
+                    case '.':
+                        display.textContent += '.';
+                        calculator.dataset.previousKeyType = '.';
                         break;
-                    case 'decimal':
-                        decimal(displayedNum);
-                        break;
-                    case 'clear':
-                        clear();
-                        break;
-                    case 'calculate':
-                        display.textContent = calculate(calculator.dataset.firstValue, calculator.dataset.operator, displayedNum);
-                        break;
-                    default:
-                        if (displayedNum === '0' || previousKeyType === 'operator') {
-                            display.textContent = keyContent;
-                        } else if (previousKeyType === '.') {
-                            display.textContent += keyContent;
-                        } else {
-                            display.textContent = displayedNum + keyContent;
-                        }
+                    case '(':
+                    case ')':
                         break;
                 }
             }
-        }
-
-        function operator(key, displayedNum, action) {
-            key.classList.add('is-depressed');
-            calculator.dataset.previousKeyType = 'operator';
-            calculator.dataset.firstValue = displayedNum;
-            calculator.dataset.operator = action;
-        }
-
-        function decimal(displayedNum) {
-            display.textContent = displayedNum + '.';
-        }
-
-        function clear() {
-            display.textContent = '0';
-            display.firstValue = 0;
-            calculator.dataset.previousKeyType = "clear";
-        }
-
-        function calculate(n1, operator, n2) {
-            let result = '';
-            switch(operator) {
-                case 'add':
-                    result = parseFloat(n1) + parseFloat(n2);
-                    break;
-                case 'subtract':
-                    result = parseFloat(n1) - parseFloat(n2);
-                    break;
-                case 'multiply':
-                    result = parseFloat(n1) * parseFloat(n2);
-                    break;
-                case 'divide':
-                    result = parseFloat(n1) / parseFloat(n2);
-                    break;
+            
+            function clear() {
+                display.textContent = '0';
+                display.firstValue = 0;
+                calculator.dataset.previousKeyType = 'clear';
             }
-            return result;
-        }
-    </script>
-</body>
+            
+            function calculate(n1, operator, n2) {
+                let result = '';
+                // Parse the inputs as complex numbers if they contain 'i'
+                //const complex1 = parseComplex(n1);
+                //const complex2 = parseComplex(n2);
+                switch(operator) {
+                    case 'add':
+                        result = parseFloat(n1) + parseFloat(n2);
+                        break;
+                    case 'sub':
+                        result = parseFloat(n1) - parseFloat(n2);
+                        break;
+                    case 'mul':
+                        result = parseFloat(n1) * parseFloat(n2);
+                        break;
+                    case 'div':
+                        result = parseFloat(n1) / parseFloat(n2);
+                        break;
+                    case 'exp':
+                        result = exp(n1, n2);
+                }
+                display.textContent = result // `${result.real}${result.imag >= 0 ? '+' : ''}${result.imag}i`;
+                calculator.dataset.previousKeyType = 'calculate';
+            }
+            
+
+            function exp(x, y) {
+                var tmp = 1;
+                for (var j = 0; j < y; j++) {
+                    tmp *= x;
+                }
+                return tmp;
+            }
+
+            var factorials = [1, 1];
+            
+            function fac(x) {
+                if (factorials.length-1 < x) {
+                    for (var i = factorials.length-1; i < x; i++) {
+                        factorials.push(factorials[i]*(i+1));
+                    }
+                }
+                return factorials[x];
+            }
+
+            function sine(x) {
+                x = x % (2*pi);
+                var k = -1;
+                var sin = x;
+                for (var i = 3; i <= 51; i += 2) {
+                    var tmp = 1;
+                    for (var j = 0; j < i; j++) {
+                        tmp *= x;
+                    }
+                    sin += k*(tmp/fac(i))
+                    k *= -1;
+                }
+                return sin;
+            }
+
+            function cosine(x) {
+                x = x % (2*pi);
+                var k = -1;
+                var cos = 1;
+                for (var i = 2; i <= 50; i += 2) {
+                    var tmp = 1;
+                    for (var j = 0; j < i; j++) {
+                        tmp *= x;
+                    }
+                    cos += k*(tmp/fac(i))
+                    k *= -1;
+                }
+                return cos;
+            }
+
+
+            function parseComplex(str) {
+                const regex = /([-+]?[0-9]*\.?[0-9]+)?([-+]?[0-9]*\.?[0-9]*)i/;
+                const match = str.match(regex);
+                const real = match[1] ? parseFloat(match[1]) : 0;
+                const imag = match[2] ? parseFloat(match[2]) : (str.includes('i') ? 1 : 0);
+                return new Complex(real, imag);
+            }
+
+            function Complex(real, imag) {
+                this.real = real;
+                this.imag = imag;
+            }
+
+            // Addition of two complex numbers
+            function addComplex(c1, c2) {
+                return new Complex(c1.real + c2.real, c1.imag + c2.imag);
+            }
+            
+            // Subtraction of two complex numbers
+            function subtractComplex(c1, c2) {
+                return new Complex(c1.real - c2.real, c1.imag - c2.imag);
+            }
+            
+            // Multiplication of two complex numbers
+            function multiplyComplex(c1, c2) {
+                const realPart = c1.real * c2.real - c1.imag * c2.imag;
+                const imagPart = c1.real * c2.imag + c1.imag * c2.real;
+                return new Complex(realPart, imagPart);
+            }
+            
+            // Division of two complex numbers
+            function divideComplex(c1, c2) {
+                const denominator = c2.real * c2.real + c2.imag * c2.imag;
+                const realPart = (c1.real * c2.real + c1.imag * c2.imag) / denominator;
+                const imagPart = (c1.imag * c2.real - c1.real * c2.imag) / denominator;
+                return new Complex(realPart, imagPart);
+            }
+        </script>
+    </body>
 </html>
