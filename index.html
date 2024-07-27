@@ -158,14 +158,16 @@
                             <sub>x</sub>
                         </span>z
                     </button>
-                    <button class="key--operator" data-action=")">)</button>
+                    <button class="key--operator" data-action="abs">|x|</button>
                     <button class="key--operator" data-action="fac">!</button>
                     <button class="key--operator" data-action="sin">sin(x)</button>
                     <button class="key--operator" data-action="cos">cos(x)</button>
                     <button class="key--operator" data-action="tan">tan(x)</button>
                     <button class="key--operator" data-action="pi">π</button>
                     <button class="key--operator" data-action="exp">x<sup class='superscript'><sup class='superscript'>y</sup></sup></button>
-                    <button class="key--operator" data-action="root">&#x221A;x</button>
+                    <button class="key--operator" data-action="root">
+                        <sup><sup><sup>y</sup></sup></sup>
+                        &#x221A;x</button>
                     <button class="key--operator" data-action="log">log<sub><sub>x</sub></sub>y</button>
                     <button class="key--operator" data-action="e">e</button>
                     <button class="key--operator" data-action="(">(</button>
@@ -196,6 +198,7 @@
             const display = document.querySelector('.calculator__display');
             const pi = 3.141592653589793;
             const euler = 2.718281828459045;
+            calculator.dataset.firstValue = 0;
 
             keys.addEventListener('click', handleClick);
             
@@ -223,14 +226,22 @@
                         case 'fac':
                             display.textContent = fac(displayedNum);
                             break;
+                        case 'abs':
+                            display.textContent = abs(displayedNum);
+                            break;
                         case 'add':
-                        case 'sub':
                         case 'mul':
                         case 'div':
-                        case 'exp':                   
+                        case 'exp':
                         case 'root':
                         case 'log':
                             operator(key, displayedNum, action);
+                            break;
+                        case 'sub':
+                            operator(key, displayedNum, action);
+                            if (calculator.dataset.firstValue == 0) {
+                                display.textContent = '-';
+                            }
                             break;
                         case 'decimal':
                         case '(':
@@ -303,11 +314,33 @@
                         break;
                     case 'exp':
                         result = exp(n1, n2);
+                        break;
+                    case 'root':
+                        result = root(n1, n2, 1);
+                        break;
                 }
                 display.textContent = result // `${result.real}${result.imag >= 0 ? '+' : ''}${result.imag}i`;
                 calculator.dataset.previousKeyType = 'calculate';
+                display.firstValue = 0;
             }
+
             
+            function abs(x) {
+                if (x < 0) {
+                    return -x;
+                }
+                return x;
+            }
+
+            function root(x, y, guess) {
+                let z = guess;
+                let z2 = 0;
+                for (let i = 0; i < 100; i++) {
+                    z2 = z * (1 - 1 / y) + x / (y * exp(z, y - 1));
+                    z = z2;
+                }
+                return z2;
+            }
 
             function exp(x, y) {
                 var tmp = 1;
@@ -338,7 +371,7 @@
                         tmp *= x;
                     }
                     sin += k*(tmp/fac(i))
-                    k *= -1;
+                    k = -k;
                 }
                 return sin;
             }
@@ -353,7 +386,7 @@
                         tmp *= x;
                     }
                     cos += k*(tmp/fac(i))
-                    k *= -1;
+                    k = -k;
                 }
                 return cos;
             }
